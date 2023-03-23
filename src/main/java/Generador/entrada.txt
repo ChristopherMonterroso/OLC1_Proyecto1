@@ -1,0 +1,11 @@
+{
+   //Este un comentario de linea
+    Calcular [4+5*8];
+    Calcular [-(4+3/2)];  
+
+    //Este es un error lexico, y es capaz de recuperarse
+    $
+   
+    //Este es otro comentario de linea
+    Calcular [8*9+2];
+}

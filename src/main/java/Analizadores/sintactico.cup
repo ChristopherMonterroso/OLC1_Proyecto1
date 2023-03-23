@@ -1,0 +1,121 @@
+/* 1. Package e importaciones */
+package Analizadores; 
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.util.List;
+import Errores.Excepcion;
+
+/* 2. Codigo para el parser, variables, metodos */
+parser code 
+{:
+    
+    public ArrayList<Automata> arboles = new ArrayList<>();
+    public List<String> resultados = new ArrayList<String>();
+    
+    //Lista de errores
+    public ArrayList<Excepcion> Errores = new ArrayList();
+
+    /**
+     * Método al que se llama automáticamente ante algún error sintactico.
+     **/ 
+    public void syntax_error(Symbol s){ 
+        Errores.add(new Excepcion("Sintáctico", "Error de sintaxis detectado. Se detectó: " + s.value, s.left + "", s.right + ""));
+    } 
+    
+    /**
+     * Método al que se llama automáticamente ante algún error sintáctico 
+     * en el que ya no es posible una recuperación de errores.
+     **/ 
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        System.out.println("Error síntactico irrecuperable en la Línea " + (s.left)+ " Columna "+s.right+". Componente " + s.value + " no reconocido."); 
+    }
+
+    public ArrayList<Excepcion> getErrores(){
+        return Errores;
+    }
+
+:} 
+
+/* 3. Terminales */
+terminal String PR_CONJ, DOS_PUNTOS, GUION, MAYOR, COMA, SEPARADOR, LLAVE_A, LLAVE_C, CONCATENACION, DISYUNCION, CERRADURA_KLEENE, CERRADURA_POSITIVA,
+         CERRADURA_BOOLEANA, PORCENTAJE, PUNTO_Y_COMA, IDENTIFICADOR, LETRA_MINUSCULA, LETRA_MAYUSCULA, NUMEROS, CARACTERES_ESPECIALES, 
+         CARACTER, CADENA;
+
+
+/* 4. No Terminales */
+non terminal ini;
+non terminal primera_parte, segunda_parte, instruccion, notacion, expresion_regular,singular, conjunto_coma, evaluacion;
+
+
+/* 5. Precedencias */
+
+/* 6. Producciones */
+
+start with ini; 
+ini ::= LLAVE_A primera_parte PORCENTAJE PORCENTAJE PORCENTAJE PORCENTAJE segunda_parte LLAVE_C;
+
+primera_parte ::= primera_parte instruccion|
+                  instruccion;
+
+instruccion ::= PR_CONJ DOS_PUNTOS IDENTIFICADOR GUION MAYOR notacion PUNTO_Y_COMA| 
+                IDENTIFICADOR GUION MAYOR expresion_regular:a PUNTO_Y_COMA {: arboles.add(new Automata((Nodo_binario) a));:};
+
+notacion ::= LETRA_MAYUSCULA SEPARADOR LETRA_MAYUSCULA |
+             LETRA_MINUSCULA SEPARADOR LETRA_MINUSCULA |
+             NUMEROS SEPARADOR NUMEROS | 
+             CARACTERES_ESPECIALES SEPARADOR CARACTERES_ESPECIALES |
+             conjunto_coma;
+
+conjunto_coma ::= conjunto_coma COMA singular |
+                  singular;
+
+singular ::= LETRA_MAYUSCULA |
+             LETRA_MINUSCULA |
+             NUMEROS |
+             CARACTERES_ESPECIALES;
+
+expresion_regular ::= CONCATENACION:a expresion_regular:b expresion_regular:c {:
+                         Nodo_binario padre = new Nodo_binario(a);
+                         padre.setHijo_izquierdo((Nodo_binario)b);
+                         padre.setHijo_derecho((Nodo_binario)c);
+                         RESULT = padre;
+                      :}|
+                      DISYUNCION:a expresion_regular:b expresion_regular:c {:
+                         Nodo_binario padre = new Nodo_binario(a);
+                         padre.setHijo_izquierdo((Nodo_binario)b);
+                         padre.setHijo_derecho((Nodo_binario)c);
+                         RESULT = padre;
+                      :}|
+                      CERRADURA_KLEENE:a expresion_regular:b {:
+                         Nodo_binario padre = new Nodo_binario(a);
+                         padre.setHijo_izquierdo((Nodo_binario)b);
+                         RESULT = padre;
+                      :}| 
+                      CERRADURA_POSITIVA:a expresion_regular:b {:
+                         Nodo_binario padre = new Nodo_binario(a);
+                         padre.setHijo_izquierdo((Nodo_binario)b);
+                         RESULT = padre;
+                      :}|
+                      CERRADURA_BOOLEANA:a expresion_regular:b {:
+                         Nodo_binario padre = new Nodo_binario(a);
+                         padre.setHijo_izquierdo((Nodo_binario)b);
+                         RESULT = padre;
+                      :}|
+                      CARACTER:a {:
+                         Nodo_binario hoja = new Nodo_binario(a);
+                         hoja.setHoja(true);
+                         hoja.setAnulable(false);
+                         RESULT = hoja;
+                      :}|
+                      LLAVE_A IDENTIFICADOR:a LLAVE_C {:
+                         Nodo_binario hoja = new Nodo_binario(a);
+                         hoja.setAnulable(false);
+                         hoja.setHoja(true);
+                         RESULT = hoja;
+                      :};
+
+segunda_parte ::= segunda_parte evaluacion |
+                  evaluacion;
+
+evaluacion ::= IDENTIFICADOR DOS_PUNTOS CADENA PUNTO_Y_COMA;
