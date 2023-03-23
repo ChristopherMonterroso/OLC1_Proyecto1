@@ -6,116 +6,254 @@ import java.util.ArrayList;
 import java.util.List;
 import Errores.Excepcion;
 
+   
+
+ 
 /* 2. Codigo para el parser, variables, metodos */
-parser code 
+
+parser code
 {:
-    
-    public ArrayList<Automata> arboles = new ArrayList<>();
+
     public List<String> resultados = new ArrayList<String>();
-    
-    //Lista de errores
+
+    public ArrayList<Automata> arboles = new ArrayList<>();
+
+
+    //Lista de erros
     public ArrayList<Excepcion> Errores = new ArrayList();
-
-    /**
-     * Método al que se llama automáticamente ante algún error sintactico.
-     **/ 
-    public void syntax_error(Symbol s){ 
+    public void syntax_error(Symbol s){
         Errores.add(new Excepcion("Sintáctico", "Error de sintaxis detectado. Se detectó: " + s.value, s.left + "", s.right + ""));
-    } 
-    
-    /**
-     * Método al que se llama automáticamente ante algún error sintáctico 
-     * en el que ya no es posible una recuperación de errores.
-     **/ 
-    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
-        System.out.println("Error síntactico irrecuperable en la Línea " + (s.left)+ " Columna "+s.right+". Componente " + s.value + " no reconocido."); 
     }
-
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{
+        System.out.println("Error síntactico irrecuperable en la Línea " + (s.left)+ " Columna "+s.right+". Componente " + s.value + " no reconocido.");
+    }
     public ArrayList<Excepcion> getErrores(){
         return Errores;
     }
 
-:} 
 
-/* 3. Terminales */
-terminal String PR_CONJ, DOS_PUNTOS, GUION, MAYOR, COMA, SEPARADOR, LLAVE_A, LLAVE_C, CONCATENACION, DISYUNCION, CERRADURA_KLEENE, CERRADURA_POSITIVA,
-         CERRADURA_BOOLEANA, PORCENTAJE, PUNTO_Y_COMA, IDENTIFICADOR, LETRA_MINUSCULA, LETRA_MAYUSCULA, NUMEROS, CARACTERES_ESPECIALES, 
-         CARACTER, CADENA;
+    public List<ArrayList> conjuntos = new ArrayList<>();
+    public List<String> conjunto = new ArrayList<>();
+
+    public List<ArrayList> exp_regulares = new ArrayList<>();
+    public List<String> exp_regular = new ArrayList<>();
+
+    public List<ArrayList> declaraciones = new ArrayList<>();
+    public List<String> declaracion = new ArrayList<>();
+
+:}
+
+/* Terminales */
+terminal String CONJUNTO;
+terminal String ABRE_LLAVES,CIERRA_LLAVES;
+terminal String DOS_PUNTOS,GUION,MAYOR_QUE,PUNTO_COMA,COMA,PORCENTAJES,VIRGULILLA;
+terminal String BARRA_INVERTIDA,BARRA,CARACTER;
+terminal String CONCATENACION,DISYUNCION,CERRADURA_KLEENE,CERRADURA_POSITIVA,CIERRA_INTERROGACION;
+terminal String COMILLAS_DOBLES,COMILLA_SIMPLE,SALTO_LINEA;
+terminal String CADENA,VARIABLE,ASCCI,NUMERO,LETRA_MAYUSCULA,LETRA_MINUSCULA;
+
+/* No Terminales */
+non terminal inicio;
+non terminal instrucciones_arriba,instrucciones_abajo;
+non terminal conjunto;
+non terminal expresion_regular;
+non terminal notacion_conjuntos,unir_letras,unir_numeros,letras,unir_ascci;
+non terminal notacion_expr;
+non terminal notacion_declaraciones;
 
 
-/* 4. No Terminales */
-non terminal ini;
-non terminal primera_parte, segunda_parte, instruccion, notacion, expresion_regular,singular, conjunto_coma, evaluacion;
+start with inicio;
+
+inicio::=
+    ABRE_LLAVES instrucciones_arriba PORCENTAJES PORCENTAJES instrucciones_abajo CIERRA_LLAVES
+;
+
+instrucciones_arriba::=
+    conjunto
+    | expresion_regular
+    | conjunto instrucciones_arriba
+    | expresion_regular instrucciones_arriba
+;
+
+conjunto::=
+    CONJUNTO DOS_PUNTOS VARIABLE:a GUION MAYOR_QUE notacion_conjuntos PUNTO_COMA    {:conjunto.add(a);conjuntos.add((ArrayList)conjunto);conjunto=new ArrayList<>();:}
+;
+
+notacion_conjuntos::=
+    LETRA_MAYUSCULA:a VIRGULILLA LETRA_MAYUSCULA:b                                  {:conjunto.add(a);conjunto.add(b);conjunto.add("~");:}
+    | LETRA_MINUSCULA:a VIRGULILLA LETRA_MINUSCULA:b                                {:conjunto.add(a);conjunto.add(b);conjunto.add("~");:}
+    | NUMERO:a VIRGULILLA NUMERO:b                                                  {:conjunto.add(a);conjunto.add(b);conjunto.add("~");:}
+    | unir_ascci                                                                    {:conjunto.add(",");:}
+    | unir_letras                                                                   {:conjunto.add(",");:}
+    | unir_numeros                                                                  {:conjunto.add(",");:}
+;
+
+letras::=
+    LETRA_MAYUSCULA:a                                                               {:conjunto.add(a);:}
+    | LETRA_MINUSCULA:a                                                             {:conjunto.add(a);:}
+;
+
+unir_letras::=
+    letras
+    | letras COMA unir_letras
+;
+
+unir_numeros::=
+    NUMERO:a                                                                        {:conjunto.add(a);:}
+    | NUMERO:a COMA unir_numeros                                                    {:conjunto.add(a);:}
+;
+
+unir_ascci::=
+    ASCCI:a                                                                         {:conjunto.add(a);:}
+    | ASCCI:a COMA unir_ascci                                                       {:conjunto.add(a);:}
+    | GUION:a COMA unir_ascci                                                       {:conjunto.add(a);:}
+    | ABRE_LLAVES:a COMA unir_ascci                                                 {:conjunto.add(a);:}
+    | CIERRA_LLAVES:a COMA unir_ascci                                               {:conjunto.add(a);:}
+    | DOS_PUNTOS:a COMA unir_ascci                                                  {:conjunto.add(a);:}
+    | MAYOR_QUE:a COMA unir_ascci                                                   {:conjunto.add(a);:}
+    | PUNTO_COMA:a COMA unir_ascci                                                  {:conjunto.add(a);:}
+    | COMA COMA:a unir_ascci                                                        {:conjunto.add(a);:}
+    | CONCATENACION:a COMA unir_ascci                                               {:conjunto.add(a);:}
+    | DISYUNCION COMA:a unir_ascci                                                  {:conjunto.add(a);:}
+    | CERRADURA_KLEENE:a COMA unir_ascci                                            {:conjunto.add(a);:}
+    | CERRADURA_POSITIVA:a COMA unir_ascci                                          {:conjunto.add(a);:}
+    | CIERRA_INTERROGACION:a COMA unir_ascci                                        {:conjunto.add(a);:}
+    | BARRA_INVERTIDA:a COMA unir_ascci                                             {:conjunto.add(a);:}
+    | BARRA:a COMA unir_ascci                                                       {:conjunto.add(a);:}
+    | COMILLAS_DOBLES:a COMA unir_ascci                                             {:conjunto.add(a);:}
+    | COMILLA_SIMPLE:a COMA unir_ascci                                              {:conjunto.add(a);:}
+    | SALTO_LINEA:a COMA unir_ascci                                                 {:conjunto.add(a);:}
+    | CARACTER:a COMA unir_ascci                                                    {:conjunto.add(a);:}
+    | GUION:a                                                                       {:conjunto.add(a);:}
+    | ABRE_LLAVES:a                                                                 {:conjunto.add(a);:}
+    | CIERRA_LLAVES:a                                                               {:conjunto.add(a);:}
+    | DOS_PUNTOS:a                                                                  {:conjunto.add(a);:}
+    | MAYOR_QUE:a                                                                   {:conjunto.add(a);:}
+    | PUNTO_COMA:a                                                                  {:conjunto.add(a);:}
+    | COMA:a                                                                        {:conjunto.add(a);:}
+    | CONCATENACION:a                                                               {:conjunto.add(a);:}
+    | DISYUNCION:a                                                                  {:conjunto.add(a);:}
+    | CERRADURA_KLEENE:a                                                            {:conjunto.add(a);:}
+    | CERRADURA_POSITIVA:a                                                          {:conjunto.add(a);:}
+    | CIERRA_INTERROGACION:a                                                        {:conjunto.add(a);:}
+    | BARRA_INVERTIDA:a                                                             {:conjunto.add(a);:}
+    | BARRA:a                                                                       {:conjunto.add(a);:}
+    | COMILLAS_DOBLES:a                                                             {:conjunto.add(a);:}
+    | COMILLA_SIMPLE:a                                                              {:conjunto.add(a);:}
+    | SALTO_LINEA:a                                                                 {:conjunto.add(a);:}
+    | CARACTER:a                                                                    {:conjunto.add(a);:}
+;
+
+expresion_regular::=
+       VARIABLE:b GUION MAYOR_QUE notacion_expr:a PUNTO_COMA                          {:arboles.add(new Automata((Nodo_binario) a,b));:}
+;
 
 
-/* 5. Precedencias */
 
-/* 6. Producciones */
+notacion_expr::=
 
-start with ini; 
-ini ::= LLAVE_A primera_parte PORCENTAJE PORCENTAJE PORCENTAJE PORCENTAJE segunda_parte LLAVE_C;
+    CONCATENACION:a notacion_expr:b notacion_expr:c                                 {:
+                                                                                         Nodo_binario padre = new Nodo_binario(a);
+                                                                                         padre.setHijo_izquierdo((Nodo_binario)b);
+                                                                                         padre.setHijo_derecho((Nodo_binario)c);
+                                                                                         RESULT = padre;
+                                                                                    :}
+    | DISYUNCION:a notacion_expr:b notacion_expr:c                                  {:
+                                                                                        Nodo_binario padre = new Nodo_binario(a);
+                                                                                        padre.setHijo_izquierdo((Nodo_binario)b);
+                                                                                        padre.setHijo_derecho((Nodo_binario)c);
+                                                                                        RESULT = padre;
+                                                                                    :}
+    | CERRADURA_KLEENE:a notacion_expr:b                                            {:
+                                                                                        Nodo_binario padre = new Nodo_binario(a);
+                                                                                        padre.setHijo_izquierdo((Nodo_binario)b);
+                                                                                        RESULT = padre;
+                                                                                    :}
+    | CERRADURA_POSITIVA:a notacion_expr:b                                          {:
+                                                                                        Nodo_binario padre = new Nodo_binario(a);
+                                                                                        padre.setHijo_izquierdo((Nodo_binario)b);
+                                                                                        RESULT = padre;
+                                                                                    :}
+    | CIERRA_INTERROGACION:a notacion_expr:b                                        {:
+                                                                                        Nodo_binario padre = new Nodo_binario(a);
+                                                                                        padre.setHijo_izquierdo((Nodo_binario)b);
+                                                                                        RESULT = padre;
+                                                                                    :}
+    | COMILLAS_DOBLES:a                                                             {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | COMILLA_SIMPLE:a                                                              {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | SALTO_LINEA:a                                                                 {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | NUMERO:a                                                                      {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | LETRA_MAYUSCULA:a                                                             {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | LETRA_MINUSCULA:a                                                             {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | ASCCI:a                                                                       {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | BARRA_INVERTIDA:a                                                             {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | BARRA:a                                                                       {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | CARACTER:a                                                                    {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+    | ABRE_LLAVES VARIABLE:a CIERRA_LLAVES                                          {:
+                                                                                        Nodo_binario hoja = new Nodo_binario(a);
+                                                                                        hoja.setHoja(true);
+                                                                                        hoja.setAnulable(false);
+                                                                                        RESULT = hoja;
+                                                                                    :}
+;
 
-primera_parte ::= primera_parte instruccion|
-                  instruccion;
 
-instruccion ::= PR_CONJ DOS_PUNTOS IDENTIFICADOR GUION MAYOR notacion PUNTO_Y_COMA| 
-                IDENTIFICADOR GUION MAYOR expresion_regular:a PUNTO_Y_COMA {: arboles.add(new Automata((Nodo_binario) a));:};
 
-notacion ::= LETRA_MAYUSCULA SEPARADOR LETRA_MAYUSCULA |
-             LETRA_MINUSCULA SEPARADOR LETRA_MINUSCULA |
-             NUMEROS SEPARADOR NUMEROS | 
-             CARACTERES_ESPECIALES SEPARADOR CARACTERES_ESPECIALES |
-             conjunto_coma;
+notacion_declaraciones::=
+    VARIABLE:a DOS_PUNTOS CADENA:b PUNTO_COMA                                       {:declaracion.add(a);declaracion.add(b);declaraciones.add((ArrayList)declaracion);declaracion=new ArrayList<>();:}
+;
 
-conjunto_coma ::= conjunto_coma COMA singular |
-                  singular;
-
-singular ::= LETRA_MAYUSCULA |
-             LETRA_MINUSCULA |
-             NUMEROS |
-             CARACTERES_ESPECIALES;
-
-expresion_regular ::= CONCATENACION:a expresion_regular:b expresion_regular:c {:
-                         Nodo_binario padre = new Nodo_binario(a);
-                         padre.setHijo_izquierdo((Nodo_binario)b);
-                         padre.setHijo_derecho((Nodo_binario)c);
-                         RESULT = padre;
-                      :}|
-                      DISYUNCION:a expresion_regular:b expresion_regular:c {:
-                         Nodo_binario padre = new Nodo_binario(a);
-                         padre.setHijo_izquierdo((Nodo_binario)b);
-                         padre.setHijo_derecho((Nodo_binario)c);
-                         RESULT = padre;
-                      :}|
-                      CERRADURA_KLEENE:a expresion_regular:b {:
-                         Nodo_binario padre = new Nodo_binario(a);
-                         padre.setHijo_izquierdo((Nodo_binario)b);
-                         RESULT = padre;
-                      :}| 
-                      CERRADURA_POSITIVA:a expresion_regular:b {:
-                         Nodo_binario padre = new Nodo_binario(a);
-                         padre.setHijo_izquierdo((Nodo_binario)b);
-                         RESULT = padre;
-                      :}|
-                      CERRADURA_BOOLEANA:a expresion_regular:b {:
-                         Nodo_binario padre = new Nodo_binario(a);
-                         padre.setHijo_izquierdo((Nodo_binario)b);
-                         RESULT = padre;
-                      :}|
-                      CARACTER:a {:
-                         Nodo_binario hoja = new Nodo_binario(a);
-                         hoja.setHoja(true);
-                         hoja.setAnulable(false);
-                         RESULT = hoja;
-                      :}|
-                      LLAVE_A IDENTIFICADOR:a LLAVE_C {:
-                         Nodo_binario hoja = new Nodo_binario(a);
-                         hoja.setAnulable(false);
-                         hoja.setHoja(true);
-                         RESULT = hoja;
-                      :};
-
-segunda_parte ::= segunda_parte evaluacion |
-                  evaluacion;
-
-evaluacion ::= IDENTIFICADOR DOS_PUNTOS CADENA PUNTO_Y_COMA;
+instrucciones_abajo::=
+    notacion_declaraciones
+    | notacion_declaraciones instrucciones_abajo
+;

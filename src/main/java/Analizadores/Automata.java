@@ -20,7 +20,7 @@ public class Automata {
     
     ArrayList<Nodo_binario> leaves = new ArrayList();
 
-    public Automata(Nodo_binario arbol_expresion) {
+    public Automata(Nodo_binario arbol_expresion,String nombre) {
         Nodo_binario raiz = new Nodo_binario(".");
         Nodo_binario aceptacion = new Nodo_binario("#");
         aceptacion.setHoja(true);
@@ -38,7 +38,7 @@ public class Automata {
         follows(this.arbol_expresion);
         tablaSiguientes ft = new tablaSiguientes();
         System.out.println("==============================TABLA SIGUIENTES==============================");
-        ft.printTable(table);
+        ft.printTable(table,nombre);
         tablaTransicion tran = new tablaTransicion(raiz, table, leaves); // bug
         System.out.println("=============================TABLA TRANSICIONES=============================");
         tran.impTable();

@@ -135,6 +135,7 @@ public class tablaTransicion {
             }else{
                 accept=false;
             }
+            
             for (Object tr : (ArrayList) state.get(2)) {
                 transicion t = (transicion) tr;
                 graph += t.graph(accept);

@@ -197,7 +197,7 @@ public class home extends JFrame implements ActionListener {
             String path = "Reporteerrores.html";
             fichero = new FileWriter(path);
             pw = new PrintWriter(fichero);
-
+            
             //Comenzamos a escribir el html
             pw.println("<html>");
             pw.println("<head><title>REPORTE DE ERRORES</title></head>");
@@ -226,7 +226,7 @@ public class home extends JFrame implements ActionListener {
             pw.println("</div");
             pw.println("</body>");
             pw.println("</html>");
-            Desktop.getDesktop().open(new File(path));
+            //Desktop.getDesktop().open(new File(path));
 
         } catch (Exception e) {
         } finally {
