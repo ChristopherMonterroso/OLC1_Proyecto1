@@ -6,6 +6,7 @@
 package Analizadores;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -48,67 +49,82 @@ public class tablaSiguientes {
         return result;
     }
 
-    public void printTable(ArrayList<ArrayList> table,String nombre) {
+    public void printTable(ArrayList<ArrayList> table, String nombre) throws IOException {
         int num = table.size() + 1;
         FileWriter fichero = null;
         PrintWriter pw = null;
+        String s = "";
         try {
-            String path = "project1\\Siguientes_201902363\\"+nombre+".html";
+
+            s
+                    += "<!DOCTYPE html>\n"
+                    + "<html>\n"
+                    + "  <head>\n"
+                    + "    <title>Siguientes</title>\n"
+                    + "    <style>\n"
+                    + "      /* Estilos para centrar la tabla */\n"
+                    + "      html{\n"
+                    + "        background-color: lightcyan;\n"
+                    + "      }\n"
+                    + "      .center {\n"
+                    + "        text-align: center;\n"
+                    + "        margin: auto;\n"
+                    + "        width: 50%;\n"
+                    + "        border: 1px solid black;\n"
+                    + "        padding: 10px;\n"
+                    + "        background-color: azure;\n"
+                    + "        }\n"
+                    + "        th{\n"
+                    + "            border: 1px solid black;\n"
+                    + "            \n"
+                    + "            \n"
+                    + "        }\n"
+                    + "        h1{\n"
+                    + "            text-align: center;\n"
+                    + "        }\n"
+                    + "       \n"
+                    + "    </style>  </head>\n"
+                    + "  <body>"
+                    + "    <h1>Tabla de siguientes(" + nombre + ").</h1>\n"
+                    + "    <table class=\"center\">\n"
+                    + "      <tr>\n"
+                    + "        <th>Hoja</th>\n"
+                    + "        <th>Número</th>\n"
+                    + "        <th>Siguientes</th>\n"
+                    + "      </tr>\n";
+
+            for (ArrayList item : table) {
+               // System.out.println(item.get(0) + " - " + item.get(1) + " - " + item.get(2));
+                s += "<tr>\n"
+                        + "    <td>" + item.get(1) + "</td>\n"
+                        + "    <td>" + item.get(0) + "</td>\n"
+                        + "    <td>" + item.get(2) + "</td>\n"
+                        + "</tr>\n";
+            }
+            s += "<tr>\n"
+                    + "    <td>#</td>\n"
+                    + "    <td>" + num + "</td>\n"
+                    + "    <td>--</td>\n"
+                    + "</tr>\n";
+            s += "</table>\n"
+                    + "  </body>\n"
+                    + "</html>";
+            
+            String path = "Siguientes_201902363/siguientes_" + nombre + ".html";
             fichero = new FileWriter(path);
             pw = new PrintWriter(fichero);
-            pw.println(
-                "<!DOCTYPE html>\n"
-                + "<html>\n"
-                + "  <head>\n"
-                + "    <title>Tabla Centrada</title>\n"
-                + "    <style>\n"
-                + "      /* Estilos para centrar la tabla */\n"
-                + "      .center {\n"
-                + "        text-align: center;\n"
-                + "        margin: auto;\n"
-                + "        width: 50%;\n"
-                + "        border: 1px solid black;\n"
-                + "        padding: 10px;\n"
-                + "      \n"
-                + "        }\n"
-                + "        th{\n"
-                + "            border: 1px solid black;\n"
-                + "        }\n"
-                + "        h1{\n"
-                + "            text-align: center;\n"
-                + "        }\n"
-                + "    </style>"
-                + "  </head>\n"
-                + "  <body>\n"
-                + "    <h1>Tabla de siguientes.</h1>\n"
-                + "    <table class=\"center\">\n"
-                + "      <tr>\n"
-                + "        <th>Hoja</th>\n"
-                + "        <th>Número</th>\n"
-                + "        <th>Siguientes</th>\n"
-                + "      </tr>"
-                
-        );
-        for (ArrayList item : table) {
-            System.out.println(item.get(0) + " - " + item.get(1) + " - " + item.get(2));
-            pw.println("<tr>\n"
-                + "    <td>"+item.get(1)+"</td>\n"
-                + "    <td>"+item.get(0)+"</td>\n"
-                + "    <td>"+item.get(2)+"</td>\n"
-                + "</tr>");
-        }
-        System.out.println(num + " - " + "#" + " - " + "--");
-        pw.println("<tr>\n"
-                + "    <td>#</td>\n"
-                + "    <td>"+num+"</td>\n"
-                + "    <td>--</td>\n"
-                + "</tr>\n");
-        pw.println("</table>\n"
-                + "  </body>\n"
-                + "</html>");
+            pw.println(s);
         } catch (Exception e) {
+        } finally {
+            if (null != fichero) {
+                fichero.close();
+            }
         }
-        
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 }

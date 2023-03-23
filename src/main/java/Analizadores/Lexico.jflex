@@ -55,6 +55,7 @@ ESPACIO = " "
 
 
 %%
+\n {yychar=1;}
 {COMENTARIO_SIMPLE} {}
 {COMENTARIO_EXTENSO} {}
 

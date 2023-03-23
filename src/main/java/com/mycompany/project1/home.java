@@ -23,8 +23,9 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 public class home extends JFrame implements ActionListener {
 
     private JTextArea textArchivoEntrada, console;
-    private JButton generarAutomata, analizarEntrada;
+    private JButton generarAutomata, analizarEntrada,abrirUbicacion;
     private JMenuItem newA, open, save, saveAs;
+    private JComboBox comboBox;
     private String ruta = "";
 
     public home() {
@@ -62,7 +63,13 @@ public class home extends JFrame implements ActionListener {
 
         generarAutomata = new JButton("Generar Autómata");
         generarAutomata.setBounds(30, 400, 150, 30);
+        generarAutomata.addActionListener(this);
         add(generarAutomata);
+        
+        abrirUbicacion = new JButton("Mostrar archivos");
+        abrirUbicacion.setBounds(550, 100, 150, 40);
+        abrirUbicacion.addActionListener(this);
+        add(abrirUbicacion);
 
         analizarEntrada = new JButton("Analizar entrada");
         analizarEntrada.setBounds(265, 400, 150, 30);
@@ -74,10 +81,10 @@ public class home extends JFrame implements ActionListener {
         add(labelArchivo);
 
         textArchivoEntrada = new JTextArea();
-        textArchivoEntrada.setBounds(25, 35, 400, 350);
+        textArchivoEntrada.setBounds(25, 35, 500, 350);
         textArchivoEntrada.setBorder(borde);
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setBounds(25, 35, 400, 350);
+        scrollPane.setBounds(25, 35, 500, 350);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.getViewport().setBackground(Color.WHITE);
         scrollPane.getViewport().add(textArchivoEntrada);
@@ -98,9 +105,9 @@ public class home extends JFrame implements ActionListener {
         scrollPane2.getViewport().add(console);
         add(scrollPane2);
 
-        String[] elements = {"Arboles", "Siguientes", "Transiciones", "Autómatas"};
-        JComboBox comboBox = new JComboBox(elements);
-        comboBox.setBounds(450, 35, 100, 40);
+        String[] elements = {"Arboles", "Siguientes", "Transiciones", "AFD","AFND","Errores"};
+        comboBox = new JComboBox(elements);
+        comboBox.setBounds(570, 35, 100, 40);
 
         add(comboBox);
     }
@@ -154,21 +161,30 @@ public class home extends JFrame implements ActionListener {
 
         } else if (e.getSource() == saveAs) {
             this.saveAS();
-        } else if (e.getSource() == analizarEntrada) {
+
+        } else if (e.getSource() == generarAutomata) {
             String entrada = textArchivoEntrada.getText();
             ArrayList<Excepcion> errores = new ArrayList();
             try {
                 Lexico scanner = new Lexico(new java.io.StringReader(entrada));
                 Sintactico analizador = new Sintactico(scanner);
                 analizador.parse();
-                
+
                 errores.addAll(scanner.Errores);
                 errores.addAll(analizador.getErrores());
-
+                String result = "";
+                for (Excepcion err : errores) {
+                    result += "ExRegan"+"->"+err.descripcion+"\n";
+                }
+                console.setText(result);
                 generarReporteHTML(errores);
             } catch (Exception s) {
                 System.out.println(s);
             }
+        }else if (e.getSource()== abrirUbicacion){
+           String option = (String) comboBox.getSelectedItem();
+            System.out.println(option);
+            openExplorer(option(option));
         }
     }
 
@@ -188,16 +204,48 @@ public class home extends JFrame implements ActionListener {
             }
         }
     }
-
+    public String option(String s){
+        switch(s){
+            case "Transiciones":
+                return "Transiciones_201902363/";
+            case "Arboles":
+                return "Arboles_201902363/";
+            case "Siguientes":
+                return "Siguientes_201902363/";
+            case "Errores":
+                return "Errores_201902363/";
+            case "Salidas":
+                return "Salidas_201902363/";
+            case "AFD":
+                return "AFD_201902363/";
+        }
+        return "";
+    }
+    
+     public static void openExplorer(String path) {
+        try {
+            File file = new File(path);
+            Desktop desktop = Desktop.getDesktop();
+            if (file.exists()) {
+                desktop.open(file);
+            } else {
+                System.out.println("El archivo o directorio no existe");
+            }
+        } catch (IOException e) {
+            System.out.println("Se produjo un error al intentar abrir el explorador de archivos");
+            e.printStackTrace();
+        }
+    }
+    
     public static void generarReporteHTML(ArrayList<Excepcion> errores) throws IOException {
         FileWriter fichero = null;
         PrintWriter pw = null;
         try {
 
-            String path = "Reporteerrores.html";
+            String path = "Errores_201902363/Reporte_Errores.html";
             fichero = new FileWriter(path);
             pw = new PrintWriter(fichero);
-            
+
             //Comenzamos a escribir el html
             pw.println("<html>");
             pw.println("<head><title>REPORTE DE ERRORES</title></head>");

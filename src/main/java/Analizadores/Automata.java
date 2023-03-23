@@ -16,36 +16,37 @@ public class Automata {
 
     private Nodo_binario arbol_expresion;
     private int num_nodo = 1;
+    private String nombre;
     ArrayList<ArrayList> table = new ArrayList();
     
     ArrayList<Nodo_binario> leaves = new ArrayList();
 
-    public Automata(Nodo_binario arbol_expresion,String nombre) {
+    public Automata(Nodo_binario arbol_expresion,String nombre) throws IOException {
+        this.nombre=nombre;
         Nodo_binario raiz = new Nodo_binario(".");
         Nodo_binario aceptacion = new Nodo_binario("#");
         aceptacion.setHoja(true);
         aceptacion.setAnulable(false);
         raiz.setHijo_derecho(aceptacion);
         leave hoja = new leave();
-
+        
         hoja.addLeave(aceptacion, leaves);
         raiz.setHijo_izquierdo(arbol_expresion);
         this.arbol_expresion = raiz;
         asignar_numeros(this.arbol_expresion);
         num_nodo = 0;
         metodo_arbol(this.arbol_expresion);
-        graficar_arbol(this.arbol_expresion, num_nodo);
+        
+        GenerarDot(graficar_arbol(this.arbol_expresion, num_nodo), this.nombre); 
         follows(this.arbol_expresion);
         tablaSiguientes ft = new tablaSiguientes();
-        System.out.println("==============================TABLA SIGUIENTES==============================");
-        ft.printTable(table,nombre);
+        ft.printTable(table,this.nombre);
         tablaTransicion tran = new tablaTransicion(raiz, table, leaves); // bug
-        System.out.println("=============================TABLA TRANSICIONES=============================");
-        tran.impTable();
-        System.out.println("============================= GRAPHVIZ===============================================");
-        System.out.println("digraph G {\n rankdir=\"LR\"");
-        tran.impGraph();
-        System.out.println("}");
+        //System.out.println("Transiciones");
+        tran.impTable(this.nombre);
+        
+        tran.impGraph(this.nombre);
+       
     }
 
     public void asignar_numeros(Nodo_binario actual) {
@@ -124,6 +125,7 @@ public class Automata {
             num_nodo -= 1;
             return cadena;
         }
+        
         if (nodo.isHoja()) {
             String anulable = "A";
             if (nodo.isAnulable() == false) {
@@ -167,6 +169,7 @@ public class Automata {
         }
         cadena += graficar_arbol(nodo.getHijo_izquierdo(), actual);
         cadena += graficar_arbol(nodo.getHijo_derecho(), actual);
+        
         return cadena;
     }
 
@@ -210,38 +213,40 @@ public class Automata {
 
     }
 
-    private void GenerarDot(String cadena, String i) {
+    private void GenerarDot(String cadena, String nombre) {
         FileWriter fichero = null;
         PrintWriter escritor = null;
+        String s="digraph G {\n ";
+        s+=cadena;
+        s+="\n }";
         try {
-            fichero = new FileWriter("Arbol_Sintactico" + i + ".dot");
+            fichero = new FileWriter("Arboles_201902363/Arbol_Sintactico" + nombre + ".dot");
             escritor = new PrintWriter(fichero);
-            escritor.println(cadena);
+            escritor.println(s);
             escritor.close();
             fichero.close();
-            reportar(i);
+            reportar(nombre);
         } catch (Exception e) {
             System.out.println("error en generar dot");
             e.printStackTrace();
         }
     }
 
-    public void reportar(String i) throws IOException {
+    public void reportar(String nombre) throws IOException {
 
-        String file_input_path = "Arbol_Sintactico" + i + ".dot";
-        String do_path = "C:\\Program Files (x86)\\Graphviz2.38\\bin\\dot.exe";
+        String file_input_path = "Arboles_201902363/Arbol_Sintactico" + nombre + ".dot";
+        String do_path = "C:\\Program Files (x86)\\Graphviz\\bin\\dot.exe";
 
-        String file_get_path = "Arbol_Sintactico" + i + ".jpg";
+        String file_get_path = "Arboles_201902363/Arbol_Sintactico_" + nombre + ".png";
         try {
             ProcessBuilder pBuilder;
-            pBuilder = new ProcessBuilder(do_path, "-Tjpg", "-o", file_get_path, file_input_path);
+            pBuilder = new ProcessBuilder(do_path, "-Tpng", "-o", file_get_path, file_input_path);
             pBuilder.redirectErrorStream(true);
             pBuilder.start();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
-        Desktop.getDesktop().open(new File(file_get_path));
     }
 
 }

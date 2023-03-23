@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Transiciones</title>
+    <style>
+      /* Estilos para centrar la tabla */
+      html{
+        background-color: lightgrey;
+      }
+      .center {
+        text-align: center;
+        margin: auto;
+        width: 50%;
+        border: 1px solid black;
+        padding: 10px;
+        background-color: azure;
+        }
+        th{
+            border: 1px solid black;
+            
+            
+        }
+        h1{
+            text-align: center;
+        }
+       
+    </style>  </head>
+  <body>    <h1>Tabla de transiciones(frase).</h1>
+    <table class="center">
+      <tr>
+        <th>Estado</th>
+        <th>Transiciones</th>
+        <th>Aceptación</th>
+      </tr>
+<tr>
+    <td>S0</td>
+    <td>[1] [S0 -> "C" -> S1] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S1</td>
+    <td>[2] [S1 -> "O" -> S2] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S2</td>
+    <td>[3] [S2 -> "M" -> S3] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S3</td>
+    <td>[4] [S3 -> "P" -> S4] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S4</td>
+    <td>[5] [S4 -> "I" -> S5] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S5</td>
+    <td>[6] [S5 -> "1" -> S6] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S6</td>
+    <td>[7, 8, 9, 10] [S6 -> " " -> S6, S6 -> letra -> S6, S6 -> digito -> S6] </td>
+    <td>true</td>
+</tr>
+</table>
+  </body>
+</html>

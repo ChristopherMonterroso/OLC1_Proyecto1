@@ -30,14 +30,9 @@ public class transicion {
         return this.initialState + " -> " + this.transition + " -> " + this.finalState;
     }
     
-    public String graph(boolean accept){
+    public String graph(){
         
-        if (accept==true) {
-            if (this.transition.charAt(0)=='"') {
-            return this.initialState +  "->"  + this.finalState + "[label=" + this.transition + "] \n";
-        }
-            return this.finalState + "[shape=doublecircle]\n"+ this.initialState +  "->"  + this.finalState + "[label=\"" + this.transition + "\"]\n";
-        }
+        
         if (this.transition.charAt(0)=='"') {
             return this.initialState +  "->"  + this.finalState + "[label=" + this.transition + "]\n";
         }
