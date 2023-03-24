@@ -11,7 +11,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
+import com.mycompany.project1.home;
+import java.io.File;
+import java.io.FileReader;
 /**
  *
  * @author crist
@@ -114,6 +118,158 @@ public class tablaTransicion {
             state.set(3, acceptState);
         }
 
+    }
+     public void Analizar(String Nombre,ArrayList<ArrayList> conjuntos,ArrayList<ArrayList> declaraciones){
+
+        ArrayList<ArrayList> Aceptacion=new ArrayList<>();
+        ArrayList<ArrayList> Transiociones=new ArrayList<>();
+
+        boolean accept;
+        for (ArrayList state : states) {
+            if (state.get(3).equals(true)){
+                accept =true;
+            }else{
+                accept=false;
+            }
+            ArrayList<String> A= new ArrayList<>();
+            A.add((String) state.get(0));
+            A.add(String.valueOf(accept));
+            Aceptacion.add(A);
+
+            for (Object tr : (ArrayList) state.get(2)) {
+                transicion t = (transicion) tr;
+                //System.out.println(accept);
+                ArrayList<String> Transicion= new ArrayList<>();
+                Transicion.add(t.initialState);
+                if(t.transition.length()==3){
+                    String i= String.valueOf(t.transition.charAt(0));
+                    String j= String.valueOf(t.transition.charAt(2));
+                    if(i.equals("\"")&&j.equals("\"")){
+                        Transicion.add(String.valueOf(t.transition.charAt(1)));
+                    }else{
+                        Transicion.add(t.transition);
+                    }
+                }else if(t.transition.length()==4){
+                    String i= String.valueOf(t.transition.charAt(0));
+                    String j= String.valueOf(t.transition.charAt(3));
+                    if(i.equals("\"")&&j.equals("\"")){
+                        Transicion.add(String.valueOf(t.transition.charAt(1))+String.valueOf(t.transition.charAt(2)));
+                    }else{
+                        Transicion.add(t.transition);
+                    }
+                }else{
+                    Transicion.add(t.transition);
+                }
+                Transicion.add(t.finalState);
+                Transiociones.add(Transicion);
+            }
+        }
+
+        for (ArrayList declaracion : declaraciones) {
+            if(declaracion.get(0).equals(Nombre)){
+                String cadena = (String) declaracion.get(1);
+                cadena=cadena.substring(1,cadena.length()-1);
+                boolean state=Analizador(Aceptacion,Transiociones,conjuntos,cadena);
+                if(state){
+                    //System.out.println("Valido");
+                    home.printConsole("La cadena \'"+cadena+"\' es valida con la estructura "+Nombre);
+                    GenerarJson(cadena,Nombre,"Cadena Valida");
+                }else{
+                    //System.out.println("Invalido");
+                    home.printConsole("La cadena \'"+cadena+"\' no es valida con la estructura "+Nombre);
+                    GenerarJson(cadena,Nombre,"Cadena Invalida");
+                }
+            }
+        }
+    }
+
+    public void GenerarJson(String Valor,String ExpresionRegular,String Resultado){
+        Gson gson = new Gson();
+
+        try {
+            File file = new File("salidas_201902363/salida.json");
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            JsonReader reader = new JsonReader(new FileReader("Salidas_201902363/salida.json"));
+            //[{"nombre":"Pedro","edad":25,"casado":true},{"nombre":"Pedro","edad":25,"casado":true}]
+            // Convertir contenido del archivo en un objeto JsonElement
+            JsonElement contenido = gson.fromJson(reader, JsonElement.class);
+
+            // Convertir el objeto JsonElement a un objeto JsonObject o JsonArray
+            JsonArray arreglo;
+            if(contenido==null){
+                arreglo = new JsonArray();
+            }else{
+                arreglo = contenido.getAsJsonArray();
+            }
+
+
+            // Agregar nuevo objeto
+            JsonObject nuevoObjeto = new JsonObject();
+            nuevoObjeto.addProperty("Valor", Valor);
+            nuevoObjeto.addProperty("ExpresionRegular", ExpresionRegular);
+            nuevoObjeto.addProperty("Resultado", Resultado);
+            arreglo.add(nuevoObjeto);
+
+            // Escribir objeto de nuevo en el archivo
+            try (FileWriter archivoEscritura = new FileWriter("Salidas_201902363/salida.json")) {
+                gson.toJson(arreglo, archivoEscritura);
+            }
+        } catch (IOException e) {
+            System.out.println("Error al leer o escribir el archivo: " + e.getMessage());
+        }
+    }
+
+    public boolean Analizador(ArrayList<ArrayList> Aceptacion,ArrayList<ArrayList> Transiociones,ArrayList<ArrayList> conjuntos,String cadena){
+        //System.out.println("Cadena a analizar: "+cadena);
+        ArrayList<String> Lista = new ArrayList<>();
+        for (int i = 0; i < cadena.length(); i++) {
+            String caracter = Character.toString(cadena.charAt(i));
+            Lista.add(caracter);
+        }
+
+        boolean key=false;
+        String currentState="S0";
+
+        for (int i = 0; i <Lista.size() ; i++) {
+            String currentCaracter=Lista.get(i);
+            for (int j = 0; j < Transiociones.size(); j++) {
+                if (Transiociones.get(j).get(0).equals(currentState)){
+                    if(Transiociones.get(j).get(1).equals(currentCaracter)||BusquedaConjuntos(conjuntos,currentCaracter, (String) Transiociones.get(j).get(1))){
+                        //System.out.println("Se pasa del estado["+currentState+"]->{"+currentCaracter+"}->["+Transiociones.get(j).get(2)+"]");
+                        currentState= (String) Transiociones.get(j).get(2);
+                        break;
+                    }
+
+                }
+            }
+            if(i+1==Lista.size()){
+                //System.out.println("analizo el ultimo caracter");
+                for (int j = 0; j < Aceptacion.size(); j++) {
+                    if (currentState.equals(Aceptacion.get(j).get(0))&&Aceptacion.get(j).get(1).equals("true")){
+                        //System.out.println("Estado Actual["+currentState+"] = Estado de Aceptacion["+Aceptacion.get(j).get(0)+"]");
+                        //System.out.println("Acptacion["+Aceptacion.get(j).get(1)+"] = true");
+                        key=true;
+                    }
+                }
+            }
+        }
+
+        return key;
+    }
+    public boolean BusquedaConjuntos(ArrayList<ArrayList> conjuntos,String currentCaracter,String posibleConjunto){
+        boolean key=false;
+        for (ArrayList conjunto:conjuntos) {
+            if (conjunto.get(0).equals(posibleConjunto)){
+                for (int i = 1; i < conjunto.size(); i++) {
+                    if(conjunto.get(i).equals(currentCaracter)){
+                        key=true;
+                    }
+                }
+            }
+        }
+        return key;
     }
 
     public void impTable(String nombre) throws IOException {

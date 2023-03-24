@@ -11,43 +11,75 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Automata {
 
-    private Nodo_binario arbol_expresion;
+    private Nodo_binario arbol_expresion, arbol_expresionCopi;;
     private int num_nodo = 1;
     private String nombre;
     ArrayList<ArrayList> table = new ArrayList();
     
     ArrayList<Nodo_binario> leaves = new ArrayList();
-
-    public Automata(Nodo_binario arbol_expresion,String nombre) throws IOException {
+    
+     public Automata(Nodo_binario arbol_expresion,String nombre){
+        this.arbol_expresion=arbol_expresion;
+        this.arbol_expresionCopi=arbol_expresion;
         this.nombre=nombre;
+    }
+   public void Analizar(Nodo_binario arbol_expresion,ArrayList<ArrayList> conjuntos,ArrayList<ArrayList> declaraciones){
         Nodo_binario raiz = new Nodo_binario(".");
         Nodo_binario aceptacion = new Nodo_binario("#");
         aceptacion.setHoja(true);
         aceptacion.setAnulable(false);
         raiz.setHijo_derecho(aceptacion);
         leave hoja = new leave();
-        
+
         hoja.addLeave(aceptacion, leaves);
         raiz.setHijo_izquierdo(arbol_expresion);
         this.arbol_expresion = raiz;
         asignar_numeros(this.arbol_expresion);
         num_nodo = 0;
         metodo_arbol(this.arbol_expresion);
+
         
-        GenerarDot(graficar_arbol(this.arbol_expresion, num_nodo), this.nombre); 
+        graficar_arbol(this.arbol_expresion, num_nodo);
         follows(this.arbol_expresion);
         tablaSiguientes ft = new tablaSiguientes();
-        ft.printTable(table,this.nombre);
+
+
         tablaTransicion tran = new tablaTransicion(raiz, table, leaves); // bug
-        //System.out.println("Transiciones");
-        tran.impTable(this.nombre);
-        
-        tran.impGraph(this.nombre);
-       
+        tran.Analizar(nombre,conjuntos,declaraciones);
+
     }
+    public void GenerarAutomata(Nodo_binario arbol_expresion,int i) throws IOException {
+        Nodo_binario raiz = new Nodo_binario(".");
+        Nodo_binario aceptacion = new Nodo_binario("#");
+        aceptacion.setHoja(true);
+        aceptacion.setAnulable(false);
+        raiz.setHijo_derecho(aceptacion);
+        leave hoja = new leave();
+
+        hoja.addLeave(aceptacion, leaves);
+        raiz.setHijo_izquierdo(arbol_expresion);
+        this.arbol_expresion = raiz;
+        asignar_numeros(this.arbol_expresion);
+        num_nodo = 0;
+        metodo_arbol(this.arbol_expresion);
+
+        GenerarDot(graficar_arbol(this.arbol_expresion, num_nodo),nombre);
+        follows(this.arbol_expresion);
+        tablaSiguientes ft = new tablaSiguientes();
+
+        ft.printTable(table,nombre);
+        tablaTransicion tran = new tablaTransicion(raiz, table, leaves); // bug
+
+        tran.impTable(nombre);
+
+        tran.impGraph(nombre);
+    }
+
+    
 
     public void asignar_numeros(Nodo_binario actual) {
         if (actual == null) {
@@ -226,6 +258,7 @@ public class Automata {
             escritor.close();
             fichero.close();
             reportar(nombre);
+            System.out.println("aqui");
         } catch (Exception e) {
             System.out.println("error en generar dot");
             e.printStackTrace();
@@ -247,6 +280,18 @@ public class Automata {
             ex.printStackTrace();
         }
 
+    }
+  
+       public Nodo_binario getArbol_expresion() {
+        return arbol_expresion;
+    }
+    public Nodo_binario getArbol_expresionCopi() {
+        
+        return arbol_expresionCopi;
+    }
+
+    public String getNombre() {
+        return nombre;
     }
 
 }
