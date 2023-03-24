@@ -27,7 +27,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 public class home extends JFrame implements ActionListener {
 
     static JTextArea textArchivoEntrada, console;
-    private JButton generarAutomata, analizarEntrada,abrirUbicacion;
+    private JButton generarAutomata, analizarEntrada, abrirUbicacion;
     private JMenuItem newA, open, save, saveAs;
     private JComboBox comboBox;
     private String ruta = "";
@@ -69,7 +69,7 @@ public class home extends JFrame implements ActionListener {
         generarAutomata.setBounds(30, 400, 150, 30);
         generarAutomata.addActionListener(this);
         add(generarAutomata);
-        
+
         abrirUbicacion = new JButton("Mostrar archivos");
         abrirUbicacion.setBounds(550, 100, 150, 40);
         abrirUbicacion.addActionListener(this);
@@ -109,7 +109,7 @@ public class home extends JFrame implements ActionListener {
         scrollPane2.getViewport().add(console);
         add(scrollPane2);
 
-        String[] elements = {"Arboles", "Siguientes", "Transiciones", "AFD","AFND","Errores","Salidas"};
+        String[] elements = {"Arboles", "Siguientes", "Transiciones", "AFD", "AFND", "Errores", "Salidas"};
         comboBox = new JComboBox(elements);
         comboBox.setBounds(570, 35, 100, 40);
 
@@ -167,70 +167,61 @@ public class home extends JFrame implements ActionListener {
             this.saveAS();
 
         } else if (e.getSource() == generarAutomata) {
-        
-        ArrayList<Excepcion> errores = new ArrayList();
-        try {
-            Lexico scanner = new Lexico(new BufferedReader(new StringReader(textArchivoEntrada.getText())));
-            Sintactico parse = new Sintactico(scanner);
-            parse.parse();
-            errores.addAll(scanner.Errores);
-            errores.addAll(parse.getErrores());
-            generarReporteHTML(errores);
-            if (errores.size()>=1) {
-                console.setText("ExRegan -> Error(compruebe el error en el archivo de errores)");
-            }else{
-                console.setText("ExRegan -> Automatas generados");
-            }
 
-            for (int i = 0; i < parse.arboles.size(); i++) {
-                ArrayList<String> Arbol= new ArrayList();
-                Arbol.add(parse.arboles.get(i).getNombre());
-                Arbol.add(parse.arboles.get(i).getArbol_expresion().getDato());
-                
-                parse.arboles.get(i).GenerarAutomata(parse.arboles.get(i).getArbol_expresionCopi(),i);
-            }
-             
-               
-            
+            ArrayList<Excepcion> errores = new ArrayList();
+            try {
+                Lexico scanner = new Lexico(new BufferedReader(new StringReader(textArchivoEntrada.getText())));
+                Sintactico parse = new Sintactico(scanner);
+                parse.parse();
+                errores.addAll(scanner.Errores);
+                errores.addAll(parse.getErrores());
+                generarReporteHTML(errores);
+                if (errores.size() >= 1) {
+                    console.setText("ExRegan -> Error(compruebe el error en el archivo de errores)");
+                } else {
+                    console.setText("ExRegan -> Automatas generados");
+                }
 
+                for (int i = 0; i < parse.arboles.size(); i++) {
+                    ArrayList<String> Arbol = new ArrayList();
+                    Arbol.add(parse.arboles.get(i).getNombre());
+                    Arbol.add(parse.arboles.get(i).getArbol_expresion().getDato());
 
-        } catch (Exception ex) {
-            Logger.getLogger(home.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error fatal en compilación de entrada.");
+                    parse.arboles.get(i).GenerarAutomata(parse.arboles.get(i).getArbol_expresionCopi(), i);
+                }
+
+            } catch (Exception ex) {
+                Logger.getLogger(home.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Error fatal en compilación de entrada.");
 //                    System.out.println("Causa: "+ex.getCause());
-        }
-            
-        }else if (e.getSource()== abrirUbicacion){
-           String option = (String) comboBox.getSelectedItem();
+            }
+
+        } else if (e.getSource() == abrirUbicacion) {
+            String option = (String) comboBox.getSelectedItem();
             System.out.println(option);
             openExplorer(option(option));
-        }else if (e.getSource()==analizarEntrada) {
-             ArrayList<Excepcion> errores = new ArrayList();
+        } else if (e.getSource() == analizarEntrada) {
+            ArrayList<Excepcion> errores = new ArrayList();
 
+            try {
+                Lexico scanner = new Lexico(new BufferedReader(new StringReader(textArchivoEntrada.getText())));
+                Sintactico parse = new Sintactico(scanner);
+                parse.parse();
+                errores.addAll(scanner.Errores);
+                errores.addAll(parse.getErrores());
+                generarReporteHTML(errores);
 
+                ArrayList<ArrayList> Conjuntos_Arreglados = ArreglarConjuntos(parse.conjuntos);
 
-        try {
-            Lexico scanner = new Lexico(new BufferedReader(new StringReader(textArchivoEntrada.getText())));
-            Sintactico parse = new Sintactico(scanner);
-            parse.parse();
-            errores.addAll(scanner.Errores);
-            errores.addAll(parse.getErrores());
-            generarReporteHTML(errores);
+                for (int i = 0; i < parse.arboles.size(); i++) {
+                    parse.arboles.get(i).Analizar(parse.arboles.get(i).getArbol_expresionCopi(), Conjuntos_Arreglados, (ArrayList<ArrayList>) parse.declaraciones);
+                }
 
-
-            ArrayList<ArrayList> Conjuntos_Arreglados=ArreglarConjuntos(parse.conjuntos);
-
-            for (int i = 0; i < parse.arboles.size(); i++) {
-                parse.arboles.get(i).Analizar(parse.arboles.get(i).getArbol_expresionCopi(),Conjuntos_Arreglados, (ArrayList<ArrayList>) parse.declaraciones);
-            }
-
-
-
-        } catch (Exception ex) {
-            Logger.getLogger(home.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Error fatal en compilación de entrada.");
+            } catch (Exception ex) {
+                Logger.getLogger(home.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Error fatal en compilación de entrada.");
 //                    System.out.println("Causa: "+ex.getCause());
-        }
+            }
         }
     }
 
@@ -250,8 +241,9 @@ public class home extends JFrame implements ActionListener {
             }
         }
     }
-    public String option(String s){
-        switch(s){
+
+    public String option(String s) {
+        switch (s) {
             case "Transiciones":
                 return "Transiciones_201902363/";
             case "Arboles":
@@ -264,12 +256,12 @@ public class home extends JFrame implements ActionListener {
                 return "Salidas_201902363/";
             case "AFD":
                 return "AFD_201902363/";
-            
+
         }
         return "";
     }
-    
-     public static void openExplorer(String path) {
+
+    public static void openExplorer(String path) {
         try {
             File file = new File(path);
             Desktop desktop = Desktop.getDesktop();
@@ -283,7 +275,7 @@ public class home extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
-    
+
     public static void generarReporteHTML(ArrayList<Excepcion> errores) throws IOException {
         FileWriter fichero = null;
         PrintWriter pw = null;
@@ -335,39 +327,41 @@ public class home extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
-    private ArrayList<ArrayList> ArreglarConjuntos(List<ArrayList> parse_conjuntos){
-        ArrayList<ArrayList> conjuntos= new ArrayList<>();
+
+    private ArrayList<ArrayList> ArreglarConjuntos(List<ArrayList> parse_conjuntos) {
+        ArrayList<ArrayList> conjuntos = new ArrayList<>();
         for (int i = 0; i < parse_conjuntos.size(); i++) {
-            List<ArrayList>  parse_conjunto=parse_conjuntos.get(i);
+            List<ArrayList> parse_conjunto = parse_conjuntos.get(i);
             //System.out.println("Conjunto #"+(i+1)+" de nombre \""+parse_conjunto.get(parse_conjunto.size()-1)+"\" y tipo \""+parse_conjunto.get(parse_conjunto.size()-2)+"\": "+parse_conjunto);
-            ArrayList<String> conjunto= new ArrayList<>();
-            conjunto.add(String.valueOf(parse_conjunto.get(parse_conjunto.size()-1)));
-            if(String.valueOf(parse_conjunto.get(parse_conjunto.size()-2)).equals(",")){
-                for (int j = 0; j < parse_conjunto.size()-2; j++) {
+            ArrayList<String> conjunto = new ArrayList<>();
+            conjunto.add(String.valueOf(parse_conjunto.get(parse_conjunto.size() - 1)));
+            if (String.valueOf(parse_conjunto.get(parse_conjunto.size() - 2)).equals(",")) {
+                for (int j = 0; j < parse_conjunto.size() - 2; j++) {
                     conjunto.add(String.valueOf(parse_conjunto.get(j)));
                 }
                 //System.out.println("Arreglando Conjunto de tipo Coma: "+conjunto);
-            }else if (String.valueOf(parse_conjunto.get(parse_conjunto.size()-2)).equals("~")){
-                char a=String.valueOf(parse_conjunto.get(0)).charAt(0);
-                int ini=(int) a;
-                char b=String.valueOf(parse_conjunto.get(1)).charAt(0);
-                int fin=(int) b;
-                for (int j = ini; j < fin+1; j++) {
-                        char ascci=(char) j;
-                        conjunto.add(String.valueOf(ascci));
+            } else if (String.valueOf(parse_conjunto.get(parse_conjunto.size() - 2)).equals("~")) {
+                char a = String.valueOf(parse_conjunto.get(0)).charAt(0);
+                int ini = (int) a;
+                char b = String.valueOf(parse_conjunto.get(1)).charAt(0);
+                int fin = (int) b;
+                for (int j = ini; j < fin + 1; j++) {
+                    char ascci = (char) j;
+                    conjunto.add(String.valueOf(ascci));
                 }
                 //System.out.println("Arreglando Conjunto de tipo Virgulilla: "+conjunto);
             }
 
             conjuntos.add(conjunto);
         }
-        return  conjuntos;
+        return conjuntos;
     }
-    public static void printConsole(String msj){
-        if (Objects.equals(console.getText(), "")){
+
+    public static void printConsole(String msj) {
+        if (Objects.equals(console.getText(), "")) {
             console.setText(msj);
-        }else{
-            console.setText(console.getText()+"\n"+msj);
+        } else {
+            console.setText(console.getText() + "\n" + msj);
         }
     }
 }

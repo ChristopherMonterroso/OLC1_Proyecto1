@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Transiciones</title>
+    <style>
+      /* Estilos para centrar la tabla */
+      html{
+        background-color: lightgrey;
+      }
+      .center {
+        text-align: center;
+        margin: auto;
+        width: 50%;
+        border: 1px solid black;
+        padding: 10px;
+        background-color: azure;
+        }
+        th{
+            border: 1px solid black;
+            
+            
+        }
+        h1{
+            text-align: center;
+        }
+       
+    </style>  </head>
+  <body>    <h1>Tabla de transiciones(correoElectronico).</h1>
+    <table class="center">
+      <tr>
+        <th>Estado</th>
+        <th>Transiciones</th>
+        <th>Aceptación</th>
+      </tr>
+<tr>
+    <td>S0</td>
+    <td>[1, 2] [S0 -> minuscula -> S1, S0 -> mayuscula -> S1] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S1</td>
+    <td>[3, 4, 5, 6] [S1 -> minuscula -> S2, S1 -> simbolos -> S2, S1 -> numero -> S2, S1 -> mayuscula -> S2] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S2</td>
+    <td>[3, 4, 5, 6, 7] [S2 -> minuscula -> S2, S2 -> simbolos -> S2, S2 -> numero -> S2, S2 -> "@" -> S3, S2 -> mayuscula -> S2] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S3</td>
+    <td>[8, 9] [S3 -> minuscula -> S4, S3 -> mayuscula -> S4] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S4</td>
+    <td>[8, 9, 10] [S4 -> minuscula -> S4, S4 -> "." -> S5, S4 -> mayuscula -> S4] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S5</td>
+    <td>[11] [S5 -> "c" -> S6] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S6</td>
+    <td>[12] [S6 -> "o" -> S7] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S7</td>
+    <td>[13] [S7 -> "m" -> S8] </td>
+    <td>false</td>
+</tr>
+<tr>
+    <td>S8</td>
+    <td>[14] [] </td>
+    <td>true</td>
+</tr>
+</table>
+  </body>
+</html>
